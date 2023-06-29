@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <script
+            defer
+            src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+        ></script>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+            [x-cloak] {
+                display: none;
+            }
+
+            /* width */
+            ::-webkit-scrollbar {
+                width: 10px;
+            }
+
+            /* Track */
+            ::-webkit-scrollbar-track {
+                box-shadow: inset 0 0 5px grey;
+                border-radius: 5px;
+            }
+
+            /* Handle */
+            ::-webkit-scrollbar-thumb {
+                background: #d1fae5;
+                border-radius: 5px;
+            }
+
+            /* Handle on hover */
+            ::-webkit-scrollbar-thumb:hover {
+                background: #a7f3d0;
+            }
+        </style>
+        <title>ToDo App</title>
+    </head>
+    <body
+        class="bg-gradient-to-r from-indigo-300 from-10% via-sky-300 via-30% to-teal-300 to-90% flex flex-col text-teal-700 w-full pt-10"
+    >
+        <div
+            x-data="initializeData()"
+            class="container max-w-sm min-h-fit bg-white m-auto rounded-lg drop-shadow-lg"
+        >
+            <!-- title of the todo list  -->
+            <div
+                x-data="{todoTitle:'My Todo List',editTitle:false}"
+                class="bg-emerald-500 text-white p-3 rounded-t-lg"
+            >
+                <h1
+                    @click="editTitle=true"
+                    x-bind:class="editTitle && 'hidden'"
+                    class="text-2xl text-center font-bold"
+                >
+                    <span x-text="todoTitle"></span>
+                    (<span x-text="completeTask()"></span>/
+                    <span x-text="totalTask()"></span>)
+                </h1>
+                <input
+                    x-model="todoTitle"
+                    type="text"
+                    @onblur="editTitle=false"
+                    @keyup.enter="editTitle=false"
+                    x-bind:class="!editTitle && 'hidden'"
+                    class="w-full text-emerald-800 bg-emerald-100 px-4 py-2 outline-emerald-300 rounded-lg"
+                />
+            </div>
+
+            <!-- body of the todo list  -->
+            <div
+                class="bg-emerald-300 min-h-[200px] flex flex-col py-4 space-y-3 rounded-b-lg"
+            >
+                <!-- input item  -->
+                <div x-data="{newTaskTitle:''}" class="flex space-x-4 mx-5">
+                    <input
+                        type="text"
+                        x-model="newTaskTitle"
+                        placeholder="Add item"
+                        @keyup.enter="addTask(newTaskTitle); newTaskTitle=''"
+                        class="w-full px-4 py-2 bg-emerald-100 rounded-lg outline-emerald-300 shadow-inner"
+                    />
+                    <button
+                        @click="addTask(newTaskTitle); newTaskTitle=''"
+                        class="text-2xl font-extrabold w-fit bg-emerald-500 hover:bg-emerald-600 px-3 text-white rounded-lg drop-shadow-md"
+                    >
+                        +
+                    </button>
+                </div>
+
+                <!-- todo items wrapper  -->
+                <div
+                    class="flex flex-col max-h-[400px] overflow-auto space-y-3 rounded-b-lg"
+                >
+                    <!-- single todo item card template -->
+                    <template x-for="(item, index) in todos" :key="item.id">
+                        <div
+                            x-data="{edit:false, checked:item.done}"
+                            class="flex space-x-4 mx-5 px-3 py-2 bg-emerald-200 hover:bg-emerald-100 rounded-lg items-center drop-shadow-md group"
+                        >
+                            <!-- checkmark of todo item  -->
+                            <input
+                                type="checkbox"
+                                class="appearance-none drop-shadow-md bg-emerald-100 checked:after:content-[url('./icons/checkmark.svg')] h-6 w-6 pl-[3px] pt-[3px] flex text-center rounded shrink-0 cursor-pointer group-hover:border border-emerald-300"
+                                x-bind:checked="item.done"
+                                @click="toggleCheckbox(index, $el.checked); checked = $el.checked;"
+                            />
+                            <!-- edit input and title wrapper  -->
+                            <div
+                                class="flex w-full space-x-1 justify-between items-center"
+                            >
+                                <!-- edit input and save button wrapper  -->
+                                <div
+                                    x-data="{title: item.title}"
+                                    x-bind:class="!edit && 'hidden'"
+                                    class="flex w-full space-x-1 justify-between items-center"
+                                >
+                                    <!-- edit input and save icon  -->
+                                    <input
+                                        type="text"
+                                        x-model="title"
+                                        value="item.title"
+                                        @keyup.enter="editTask(index, title, checked); edit=false"
+                                        class="px-1 py-1 bg-emerald-50 focus:bg-emerald-100 rounded-lg outline-emerald-300 shadow-inner"
+                                    />
+                                    <!-- save icon  -->
+                                    <button
+                                        @click="editTask(index, title, checked); edit=false"
+                                        class="h-6 w-6 p-0 rounded shrink-0 drop-shadow-md bg-blue-400 flex items-center justify-center"
+                                    >
+                                        <img
+                                            class="h-4 w-4 p-0 rounded shrink-0 drop-shadow-md"
+                                            src="./icons/send.svg"
+                                        />
+                                    </button>
+                                </div>
+
+                                <!-- title , edit and delete button wrapper  -->
+                                <div
+                                    x-bind:class="edit && 'hidden'"
+                                    class="flex w-full space-x-1 justify-between items-center"
+                                >
+                                    <!-- title of todo  -->
+                                    <h2
+                                        class="w-full"
+                                        x-text="item.title"
+                                        x-bind:class="item.done && 'line-through'"
+                                    ></h2>
+                                    <!-- edit and delete icon wrapper  -->
+                                    <div
+                                        class="w-fit gap-1 flex justify-center items-center invisible group-hover:visible"
+                                    >
+                                        <!-- edit icon  -->
+                                        <button
+                                            class="h-6 w-6 p-0 rounded shrink-0 drop-shadow-md bg-blue-400 flex items-center justify-center"
+                                            @click="edit = true"
+                                        >
+                                            <img
+                                                class="h-4 w-4 p-0 rounded shrink-0 drop-shadow-md"
+                                                src="./icons/edit_sign.svg"
+                                            />
+                                        </button>
+
+                                        <!-- delete icon  -->
+                                        <button
+                                            @click="deleteTask(index)"
+                                            class="h-6 w-6 p-0 rounded shrink-0 drop-shadow-md bg-red-400 flex items-center justify-center"
+                                        >
+                                            <img
+                                                class="h-4 w-4 p-0 rounded shrink-0 drop-shadow-md bg-red-400"
+                                                src="./icons/trash.svg"
+                                            />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+        <footer
+            x-data
+            class="absolute right-0 bottom-0 container bg-trasnparent rounded-lg drop-shadow-lg w-fit max-w-[500px] text-center"
+        >
+            &copy;<span x-text="new Date().getFullYear()"></span>
+
+            All rights reserved to <span class="font-bold">Ashish Pondit.</span>
+        </footer>
+        <script>
+            document.addEventListener("alpine:init", () => {
+                Alpine.store("data", {});
+
+                Alpine.data("darkmode", () => ({
+                    on: false,
+
+                    toggle() {
+                        this.on = !this.on;
+                    },
+                }));
+            });
+
+            function initializeData() {
+                return {
+                    todos: [
+                        { id: 1, title: "Install Alpine.js", done: true },
+                        {
+                            id: 2,
+                            title: "Learn the features of Alpine.js",
+                            done: true,
+                        },
+                        {
+                            id: 3,
+                            title: "Learn Alpine.js directives",
+                            done: false,
+                        },
+                        {
+                            id: 4,
+                            title: "Learn the model, store and magic methods of Alpine.js",
+                            done: false,
+                        },
+                        {
+                            id: 5,
+                            title: "Make a Todo app with Alpine.js",
+                            done: false,
+                        },
+                        {
+                            id: 6,
+                            title: "Test all the features of Todo app",
+                            done: false,
+                        },
+                    ],
+                    editTask(index, newTitle, checked) {
+                        this.todos[index].title = newTitle;
+                        this.todos[index].done = checked;
+                    },
+
+                    toggleCheckbox(index, checked) {
+                        this.todos[index].done = checked;
+                    },
+
+                    deleteTask(index) {
+                        this.todos = this.todos.filter((task, taskIndex) => {
+                            return index !== taskIndex;
+                        });
+                    },
+                    idGenerator() {
+                        return Math.floor(10000000 + Math.random() * 10000000);
+                    },
+
+                    addTask(title) {
+                        this.todos.push({
+                            id: this.idGenerator(),
+                            title: title,
+                            done: false,
+                        });
+                    },
+                    completeTask() {
+                        let total = 0;
+                        this.todos.forEach((item) =>
+                            item.done ? (total += 1) : null
+                        );
+                        return total;
+                    },
+                    totalTask() {
+                        return this.todos.length;
+                    },
+                };
+            }
+        </script>
+    </body>
+</html>
