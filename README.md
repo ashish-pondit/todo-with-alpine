@@ -16,7 +16,7 @@
 
 ## Some snapshots of the App
 
-[![Netlify Status](https://api.netlify.com/api/v1/badges/42668e74-77a1-4670-a5c4-e4625935658b/deploy-status)](https://app.netlify.com/sites/task-manager-alpine/deploys)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/42668e74-77a1-4670-a5c4-e4625935658b/deploy-status)](https://task-manager-alpine.netlify.app/)
 
 <table>
     <tr>
