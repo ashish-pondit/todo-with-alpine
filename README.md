@@ -20,14 +20,14 @@
 
 <table>
     <tr>
-        <td><img width=300 src="./snapshots/example1.png" alt="snapshot 1" ></td>
-        <td><img width=300 src="./snapshots/example2.png" alt="snapshot 2" ></td>
-        <td><img width=300 src="./snapshots/example3.png" alt="snapshot 3" ></td>
-        <td><img width=300 src="./snapshots/example4.png" alt="snapshot 4" ></td>
+        <td><img width=300 src="./public/snapshots/example1.png" alt="snapshot 1" ></td>
+        <td><img width=300 src="./public/snapshots/example2.png" alt="snapshot 2" ></td>
+        <td><img width=300 src="./public/snapshots/example3.png" alt="snapshot 3" ></td>
+        <td><img width=300 src="./public/snapshots/example4.png" alt="snapshot 4" ></td>
     </tr>
     <tr>
-        <td><img width=300 src="./snapshots/example5.png" alt="snapshot 5" ></td>
-        <td><img width=300 src="./snapshots/example6.png" alt="snapshot 6" ></td>
-        <td><img width=300 src="./snapshots/example7.png" alt="snapshot 7" ></td>
+        <td><img width=300 src="./public/snapshots/example5.png" alt="snapshot 5" ></td>
+        <td><img width=300 src="./public/snapshots/example6.png" alt="snapshot 6" ></td>
+        <td><img width=300 src="./public/snapshots/example7.png" alt="snapshot 7" ></td>
     </tr>
 </table>
