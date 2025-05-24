@@ -1,0 +1,119 @@
+- name: my first play
+  hosts: all
+  tasks:
+    - name: update cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      become: yes
+
+    # - name: Upgrade package
+    #   apt:
+    #     upgrade: dist
+    #   environment:
+    #     DEBIAN_FRONTEND: noninteractive
+    #   become: yes
+
+    - name: Download docker install script
+      ansible.builtin.get_url:
+        url: https://get.docker.com
+        dest: /tmp/get-docker.sh
+        mode: "0755"
+
+    - name: Execute install script
+      ansible.builtin.shell: /tmp/get-docker.sh
+      args:
+        creates: /usr/bin/docker
+      become: yes
+
+    - name: Ensure docker group exists
+      group:
+        name: docker
+        state: present
+      become: yes
+
+    - name: Check if user is in Docker group
+      ansible.builtin.command: groups {{ ansible_user_id }}
+      register: user_groups
+
+    - name: Add user "{{ ansible_user_id }}" to docker group
+      ansible.builtin.user:
+        name: "{{ ansible_user_id }}"
+        groups: docker
+        append: yes
+      become: yes
+
+    - name: Reboot
+      ansible.builtin.reboot:
+      become: yes
+      when: "'docker' not in user_groups.stdout"
+
+- name: Run application in workers
+  hosts: workers
+  tasks:
+    - name: Gather installed packages
+      ansible.builtin.package_facts:
+
+    - name: Print Docker not installed message
+      ansible.builtin.debug:
+        msg: "Docker is NOT installed"
+      when: "'docker-ce' not in ansible_facts.packages"
+
+    - name: Pull docker image
+      community.docker.docker_image:
+        name: 1604071/simple-todo
+        source: pull
+        force_source: true
+      when: "'docker-ce' in ansible_facts.packages"
+
+    - name: Stop and remove existing container
+      community.docker.docker_container:
+        name: todo_app
+        state: absent
+
+    - name: Run docker image
+      community.docker.docker_container:
+        name: todo_app
+        image: 1604071/simple-todo
+        state: started
+        detach: true
+        restart_policy: unless-stopped
+        ports:
+          - "3000:3000"
+
+- name: Set up nginx
+  hosts: load-balancer
+  tasks:
+    - name: Gather installed packages
+      ansible.builtin.package_facts:
+
+    - name: Check if Docker is installed
+      ansible.builtin.debug:
+        msg: "Docker is not installed."
+      when: "'docker-ce' not in ansible_facts.packages"
+
+    - name: Pull docker image
+      community.docker.docker_image:
+        name: nginx
+        source: pull
+
+    - name: Copy NGINX config file to target machine
+      ansible.builtin.copy:
+        src: ./nginx/
+        dest: /etc/nginx/
+        owner: root
+        group: root
+        mode: 0644
+      become: yes
+
+    - name: Run docker image
+      community.docker.docker_container:
+        name: nginx
+        image: nginx
+        state: started
+        detach: true
+        volumes:
+          - /etc/nginx/nginx.conf:/etc/nginx/nginx.conf
+        restart_policy: unless-stopped
+        ports:
+          - "80:80"

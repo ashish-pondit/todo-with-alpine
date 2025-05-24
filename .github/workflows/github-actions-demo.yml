@@ -41,7 +41,7 @@ jobs:
 
       - name: Run Ansible Playbook with Become Password
         run: |
-          cd ansible/
+          cd ansible_playbooks/
           ansible-playbook \
             -i inventory.ini \
             playbook.yml \
