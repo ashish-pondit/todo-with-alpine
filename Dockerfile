@@ -8,6 +8,12 @@ COPY package-lock.json .
 COPY package.json .
 RUN npm install
 
+ARG APP_COMMIT_HASH
+ARG APP_COMMIT_MESSAGE
+
+ENV APP_COMMIT_HASH=$APP_COMMIT_HASH
+ENV APP_COMMIT_MESSAGE=$APP_COMMIT_MESSAGE
+
 COPY public ./public
 
 COPY server.js .

@@ -21,7 +21,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build Docker Image
-        run: docker build -t 1604071/simple-todo .
+        run: docker build --build-arg APP_COMMIT_MESSAGE="$(git log -1 --pretty=format:"%B")" --build-arg APP_COMMIT_HASH="$(git log -1 --pretty=format:"%H")" -t 1604071/simple-todo .
 
       - name: Push Docker Image
         run: docker push 1604071/simple-todo

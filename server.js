@@ -4,12 +4,6 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 const os = require("os");
-const git = require("git-last-commit");
-
-let commitInfo = {};
-git.getLastCommit(function (err, commit) {
-  commitInfo = commit;
-});
 
 
 // Serve static files from the 'public' directory
@@ -23,8 +17,8 @@ app.get("/", (req, res) => {
 app.get("/data", (req, res) => {
   res.json({
     host: os.hostname(),
-    hash: commitInfo.hash,
-    subject: commitInfo.subject,
+    hash: process.env.APP_COMMIT_HASH || '',
+    subject: process.env.APP_COMMIT_MESSAGE || '',
   });
 });
 
