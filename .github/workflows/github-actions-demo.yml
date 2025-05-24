@@ -28,10 +28,16 @@ jobs:
 
   deploy:
     runs-on: self-hosted
+    needs: build
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+
+      - name: checking directory
+        run: |
+          pwd
+          ls
 
       - name: Run Ansible Playbook with Become Password
         run: |
