@@ -25,3 +25,18 @@ jobs:
 
       - name: Push Docker Image
         run: docker push 1604071/simple-todo
+
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Run Ansible Playbook with Become Password
+        run: |
+          cd ansible/
+          ansible-playbook \
+            -i inventory.ini \
+            playbook.yml \
+            --extra-vars "ansible_become_password=${{ secrets.ANSIBLE_BECOME_PASS }}"
