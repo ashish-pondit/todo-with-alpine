@@ -117,3 +117,69 @@
         restart_policy: unless-stopped
         ports:
           - "80:80"
+
+- name: Set up node exporter
+  hosts: workers
+  tasks:
+    - name: Pull node exporter image
+      community.docker.docker_image:
+        name: quay.io/prometheus/node-exporter:latest
+        source: pull
+
+    - name: Run node exporter
+      community.docker.docker_container:
+        name: node-exporter
+        image: quay.io/prometheus/node-exporter:latest
+        state: started
+        detach: true
+        volumes:
+          - /:/host:ro,rslave
+        restart_policy: unless-stopped
+        network_mode: host
+        pid_mode: host
+        command: "--path.rootfs=/host"
+
+- name: Set up prometheus and grafana
+  hosts: load-balancer
+  tasks:
+    - name: Copy premetheus config file
+      ansible.builtin.copy:
+        src: ./prometheus/
+        dest: /etc/prometheus/
+        owner: root
+        group: root
+        mode: 0644
+      become: yes
+
+    - name: Pull prometheus image
+      community.docker.docker_image:
+        name: prom/prometheus
+        source: pull
+
+    - name: Run prometheus
+      community.docker.docker_container:
+        name: prometheus
+        image: prom/prometheus
+        state: started
+        detach: true
+        volumes:
+          - /etc/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+        restart_policy: unless-stopped
+        ports:
+          - "9090:9090"
+
+    - name: Pull grafana image
+      community.docker.docker_image:
+        name: grafana/grafana
+        source: pull
+
+    - name: Run grafana
+      community.docker.docker_container:
+        name: grafana
+        image: grafana/grafana
+        state: started
+        detach: true
+        restart_policy: unless-stopped
+        ports:
+          - "3000:3000"
+    
