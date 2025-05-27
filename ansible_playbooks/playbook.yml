@@ -119,7 +119,7 @@
           - "80:80"
 
 - name: Set up node exporter
-  hosts: workers
+  hosts: all
   tasks:
     - name: Pull node exporter image
       community.docker.docker_image:
